@@ -1,0 +1,99 @@
+{include file="public/header"}
+{include file="public/menu"}
+{include file="public/nav"}
+<!-- 因为datalist下拉没有长度限制故用脚本解决 需要引入两个文件-->
+<!-- 本页面进行模拟数据额的添加-->
+<style type="text/css">
+    .remove{
+        margin-right:10px !important;
+        cursor:pointer;
+    }
+</style>
+<div class="row">
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+        <div id="div">
+            <div>即将开始弹幕q</div>
+        </div>
+        <label>请输入的弹幕</label>
+        <input type="text" id="input">
+        <button onclick="send()">点我</button>
+        <button onclick="btn2()">第二次点我</button>
+        </body>
+
+
+    </div>
+    <div class="hr hr32 hr-dotted"></div>
+
+    <!-- PAGE CONTENT ENDS -->
+</div><!-- /.col -->
+</div><!-- /.row -->
+</div><!-- /.page-content -->
+
+
+
+{include file="public/set"}
+<script src="__ROOT__/static/admin/js/echarts-2.2.7/build/dist/echarts.js"></script>
+<script type="text/javascript">
+
+    //监听用户发的弹幕事件
+    // 通过异步进行弹幕的提交数据
+    //send_id:发送者ID conten :内容  opening_time距离电影开始 多长时间  film_id:电影ID
+    function send(){
+        var input_val = $("#input").val();
+        $.post('{:url("api/index/add_barrage_mes")}', { send_id:1,content: input_val,opening_time:'111111',film_id:1},
+                function(data){
+                    if(data==1){
+                        var obj = {};
+                        obj.data = input_val;
+                        var NowTime = new Date();
+                        obj.time = parseInt(NowTime/1000);
+                        obj.filmid = 8;
+                        var json = JSON.stringify(obj);
+
+                        websocket.send(json);
+                    }
+                });
+        $("#input").val('');
+    }
+
+    function btn2(){
+        var input_val = $("#input").val();
+        var obj = {};
+        obj.data = input_val;
+
+        var json = JSON.stringify(obj);
+        websocket.send(json);
+
+    }
+
+    /*进行srocket 的消息发送     每隔一段时间发送一个心跳消息   避免自动关闭连接*/
+    //每隔一定时间进行一次心跳传送
+//123.207.218.195
+    //var wsServer = 'ws://123.207.218.195:8514';
+    var wsServer = 'wss://www.cweekend.cn/wss';
+    var websocket = new WebSocket(wsServer);
+    //连接上之后打开弹幕层
+    websocket.onopen = function (evt) {
+        //增加在线人数
+        console.log("Connected to WebSocket server.1");
+    };
+
+    websocket.onclose = function (evt) {
+        console.log("Disconnected");
+    };
+
+    websocket.onmessage = function (evt) {
+        $("#div").append($("<div>"+evt.data+"</div>"));
+        console.log('Retrieved data from server: ' + evt.data);
+    };
+
+
+    websocket.onerror = function (evt, e) {
+        console.log('Error occured: ' + evt.data);
+    };
+
+
+</script>
+{include file="public/footer"}
+

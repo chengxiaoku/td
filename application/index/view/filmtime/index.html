@@ -1,0 +1,193 @@
+{include file="public/header"}
+{include file="public/menu"}
+{include file="public/nav"}
+<!-- 因为datalist下拉没有长度限制故用脚本解决 需要引入两个文件-->
+<style type="text/css">
+
+</style>
+
+<div class="row">
+ <div class="col-xs-12">
+  <!-- PAGE CONTENT BEGINS -->
+
+  <div class="clearfix">
+   <div class="pull-left alert alert-success no-margin">
+    <button type="button" class="close" data-dismiss="alert">
+     <i class="icon-remove"></i>
+    </button>
+
+    <i class="icon-umbrella bigger-120 blue"></i>
+    Click on the image below or on profile fields to edit them ...
+   </div>
+
+  </div>
+
+  <div class="hr dotted"></div>
+
+  <div>
+   <div id="user-profile-1" class="user-profile row">
+    <div class="col-xs-12 col-sm-3 center">
+     <div>
+					<span class="profile-picture">
+						<img id="avatar" class="editable img-responsive" alt="Alex's Avatar" src="../../../..{$data.head_img}" />
+					</span>
+
+      <div class="space-4"></div>
+
+      <div class="width-80 label label-info label-xlg arrowed-in arrowed-in-right">
+       <div class="inline position-relative">
+        <a href="#" class="user-title-label dropdown-toggle" data-toggle="dropdown">
+         <i class="icon-circle light-green middle"></i>
+         &nbsp;
+         <span class="white">{$data.film_title}</span>
+        </a>
+       </div>
+      </div>
+     </div>
+
+     <div class="space-6"></div>
+
+     <div class="profile-contact-info">
+      <div class="profile-contact-links align-left">
+       <a class="btn btn-link" href="#">
+        <i class="icon-plus-sign bigger-120 green"></i>
+           主演:{$data.to_star}
+       </a>
+
+       <a class="btn btn-link" href="#">
+        <i class="icon-envelope bigger-120 pink"></i>
+           添加时间:{$data.add_time|date="Y-m-d H:i:s",###}
+       </a>
+
+       <a class="btn btn-link" href="#">
+        <i class="icon-globe bigger-125 blue"></i>
+           类型:{$data.category}
+       </a>
+      </div>
+
+      <div class="space-6"></div>
+
+     </div>
+
+    </div>
+
+    <div class="col-xs-12 col-sm-9">
+        <div class="center">
+        Content:
+            <input type="text" id="content" value="{$content_mes}" placeholder="请输入弹幕内容">
+            Time:<input type="text" id="test1" style="margin-left: 10px" placeholder="请选择弹幕播放时间段">
+            <button class="btn btn-success btn btn-sm" onclick="add_time()">添加</button>
+        </div>
+     <div class="profile-user-info profile-user-info-striped">
+         {volist name="list" id='vo' key="k"}
+         <div class="profile-info-row">
+
+             <div class="profile-info-name"> {$vo.time|date="H:i:s",###} </div>
+
+             <div class="profile-info-value">
+
+                 <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
+                     <span class="editable" id="signup">{$vo.content}</span>
+                     <a class="red" style="float: right;" href="javascript:return false;" onclick="del('{:url("filmtime/del")}',{$vo['id']})">
+                     <i class="icon-trash bigger-130"></i>
+                     </a>
+                 </div>
+
+                 <div class="visible-xs visible-sm hidden-md hidden-lg">
+                     <div class="inline position-relative">
+                         <button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
+                             <i class="icon-caret-down icon-only bigger-120"></i>
+                         </button>
+
+                         <ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
+                             <li>
+                                 <a href="#" class="tooltip-error" data-rel="tooltip" title="Delete">
+																				<span class="red">
+																					<i class="icon-trash bigger-120"></i>
+																				</span>
+                                 </a>
+                             </li>
+                         </ul>
+                     </div>
+                 </div>
+             </div>
+         </div>
+         {/volist}
+         <div style="float: right">{$page}</div>
+     </div>
+    </div>
+   </div>
+  </div>
+
+  <!-- PAGE CONTENT ENDS -->
+ </div><!-- /.col -->
+</div><!-- /.row -->
+
+<!-- PAGE CONTENT ENDS -->
+</div><!-- /.col -->
+</div><!-- /.row -->
+</div><!-- /.page-content -->
+
+
+
+{include file="public/set"}
+
+<!-- echarts -->
+<!--<script src="__ROOT__/static/admin/js/echarts-2.2.7/build/dist/echarts.js"></script>-->
+<!-- 时间插件所需 -->
+<script src="__ROOT__/static/admin/laydate/laydate.js"></script>
+<script type="text/javascript">
+    var filem_id = "{$data.id}";
+ //日期切换的回调
+ //限定可选时间
+ laydate.render({
+     elem: '#test1'
+     ,type: 'time'
+     ,min: '00:00:01'
+     ,max: '05:00:00'
+     ,btns: ['clear', 'confirm']
+     ,value:"{$content_time}"
+ });
+function show(){
+ alert($("#test1").val());
+}
+
+function add_time(){
+    var test1 = $("#test1").val();
+    var content = $("#content").val();
+    if(test1 == ""|| content ==""){
+        return false;
+    }
+    var arr = test1.split(":");
+    //时分秒
+    var time = parseInt(arr[0])*60*60+parseInt(arr[1])*60+parseInt(arr[2]);
+
+    $.post("{:url('Filmtime/add')}",{'opening_time':time,"arr_time":test1,'content':content,'film_id':filem_id},function (data){
+        if (data['success']) {
+            //layer.alert(data['info'], function (data) {
+                window.location.reload();
+            //});
+        }else {
+            layer.msg(data['info'], {
+                icon: 5
+            });
+        }
+    });
+ }
+    function del(url,id){
+        $.get(url,{'id':id},function (data){
+            if (data['success']) {
+                layer.msg(data['info'], {
+                    icon: 6
+                }); window.location.reload();
+
+            } else {
+                layer.msg(data['info'], {
+                    icon: 5
+                });
+            }
+        })
+    }
+</script>
+{include file="public/footer"}
+

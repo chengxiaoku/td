@@ -1,0 +1,556 @@
+{include file="public/header"}
+{include file="public/menu"}
+{include file="public/nav"}
+<!-- 因为datalist下拉没有长度限制故用脚本解决 需要引入两个文件-->
+<style type="text/css">
+    .image_td{
+        width: 60px;
+    }
+    .img_w_h{
+        width: 55px;
+        height: 80px;
+    }
+</style>
+
+<div class="row">
+
+        <div class="col-xs-12" style="margin-bottom: 10px">
+            <div class="box">
+                <div class="box-header">
+                    <form role="form" id="loginForm" action="{:url('film/index')}" method="post">
+                        <button type="button" class="btn btn-primary"  id="addfilm">添加电影</button>
+                        <button type="button" class="btn btn-danger" id="delall">批量删除</button>
+
+                        <div class="select pull-right">
+                            <div style="width:250px; margin-left: 5px;" class="input-group fr">
+                                <input type="text" id="ss" placeholder="请输入电影,主演名称" value="{$find}" class="form-control" name="find">
+                                <div  class="input-group-btn"><button type="submit" id="sou" class="btn btn-default" style="height:34px;">查找</button></div>
+                            </div>
+                        </div>
+                    </form>
+                </div><!-- /.box-header -->
+            </div>
+        </div>
+
+    <!-- 表格区域-->
+    <div class="col-xs-12" style="margin-top: 15px">
+        <div class="bs-example table-bordered table" data-example-id="hoverable-table">
+            <table class="table table-hover" id="example-r">
+                <thead>
+                <tr>
+                    <th><input type="checkbox" id="selectall"></th>
+                    <th>编号</th>
+                    <th>封面图</th>
+                    <th>电影名称</th>
+                    <th>主演</th>
+                    <th>时长</th>
+                    <th>弹幕热度</th>
+                    <th>评分</th>
+                    <th>分类</th>
+                    <th>类型</th>
+                    <th>上映状态</th>
+                    <th class="center">简介</th>
+                    <th>添加时间</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {volist name="list" id='vo' key="k"}
+                <tr >
+                    <td><input name="check" type="checkbox" value="{$vo.id}"></td>
+                    <td>{$k}</td>
+                    <td class="image_td">
+                        <a href="../..{$vo.head_img}" target="_blank"><img class="img_w_h" src="../..{$vo.head_img}"></a>
+                    </td>
+                    <td style="cursor: pointer" onclick='javascript:window.location.href="{:url('filmtime/index',['id' => $vo['id']])}"'>{$vo.film_title}</td>
+                    <td>{$vo.to_star}</td>
+                    <td>{$vo.film_duration}</td>
+                    <td>{$vo.degree_of_heat}</td>
+                    <td>{$vo.score}</td>
+                    <td>{$vo.category}</td>
+                    <td>
+                        {if condition="$vo.type eq 1"}
+                        <button class="btn btn-minier btn-purple">2D</button>
+                        {elseif condition="$vo.type eq 2"/}
+                        <button class="btn btn-minier btn-pink">3D</button>
+                        {/if}
+                    </td>
+                    <td class="hidden-480">
+                        {if condition="$vo.release eq 1"}
+                        <button class="btn btn-minier btn-danger">上映中</button>
+                        {elseif condition="$vo.release eq 2"/}
+                        <button class="btn btn-minier btn-inverse">未上映</button>
+                        {/if}
+                    </td>
+
+                    <td>{$vo.content}</td>
+                    <td>{$vo.add_time|date="Y-m-d H:i:s",###}</td>
+                    <td>
+                        <div class="visible-md visible-lg hidden-sm hidden-xs action-buttons">
+                            <a class="green" style="cursor: pointer" onclick="update('{:url("film/update")}',{$vo['id']})">
+                            <i class="icon-pencil bigger-130"></i>
+                            </a>
+
+                            <a class="red" href="javascript:return false;" onclick="del('{:url("film/del")}',{$vo['id']})">
+                            <i class="icon-trash bigger-130"></i>
+                            </a>
+                        </div>
+
+                        <div class="visible-xs visible-sm hidden-md hidden-lg">
+                            <div class="inline position-relative">
+                                <button class="btn btn-minier btn-yellow dropdown-toggle" data-toggle="dropdown">
+                                    <i class="icon-caret-down icon-only bigger-120"></i>
+                                </button>
+
+                                <ul class="dropdown-menu dropdown-only-icon dropdown-yellow pull-right dropdown-caret dropdown-close">
+                                    <li>
+                                        <a href="#" class="tooltip-success" data-rel="tooltip" title="Edit">
+																				<span class="green">
+																					<i class="icon-edit bigger-120"></i>
+																				</span>
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a href="#" class="tooltip-error" data-rel="tooltip" title="Delete">
+																				<span class="red">
+																					<i class="icon-trash bigger-120"></i>
+																				</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </td>
+                </tr>
+                {/volist}
+                </tbody>
+
+            </table>
+            <div style="float: right">{$page}</div>
+        </div>
+    </div>
+
+</div>
+<!-- 添加页面 -->
+<div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" id="exampleModal">
+    <div class="modal-dialog modal-lg" role="document">
+        <form method="post" id="filmaddform" action="{:url('film/add')}">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="gridSystemModalLabel">添加电影信息</h4>
+                </div>
+                <div class="modal-body">
+
+                    <div class="form-group">
+                        <label for="recipient-film_title" class="control-label">电影名称<span style="color: red">*</span>:</label>
+                        <input type="text" name="film_title" class="form-control" id="recipient-film_title" placeholder="请输入电影名称">
+                    </div>
+                    <div class="am-form-group">
+                        <div class="am-u-sm-9" >
+                            <div class="am-form-group am-form-file">
+                                <div class="uploadBtn" style="height: 45px;">上传封面图片</div>
+                                <small style="padding: 15px;color: #888;">双击图片删除。</small>
+                            </div>
+                            <div id="img_area"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recipient-to_star" class="control-label">主演<span style="color: red">*</span>:</label>
+                        <input type="text" name="to_star" class="form-control" id="recipient-to_star" placeholder="请输入主演">
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-score" class="control-label">评分<span style="color: red">*</span>:</label>
+                        <input type="text" name="score" class="form-control width-30" id="recipient-score" placeholder="请输入评分">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recipient-film_duration" class="control-label">时长<span style="color: red">*</span>:</label>
+                        <input type="text" name="film_duration" class="form-control width-30" id="recipient-film_duration" placeholder="请输入时长">
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-type" class="control-label">电影类型</label>
+                        <select class="form-control width-30" name="type" id="recipient-type">
+                            <option value="1" selected="selected">2D</option>
+                            <option value="2" >3D</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-max" class="control-label">是否MAX</label>
+                        <select class="form-control width-30" name="max" id="recipient-max">
+                            <option value="1" selected="selected">MAX</option>
+                            <option value="2" >不是max</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-release" class="control-label">播放状态</label>
+                        <select class="form-control width-30" name="release" id="recipient-release">
+                            <option value="1" selected="selected">上映</option>
+                            <option value="2" >未上映</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="heat" style="display: block;">
+                        <label for="recipient-degree_of_heat" class="control-label">热度<span style="color: red">*</span>:</label>
+                        <input type="text" name="degree_of_heat" class="form-control width-30" id="recipient-degree_of_heat" placeholder="请输入热度">
+                    </div>
+                    <div class="form-group" id="wish"  style="display: none">
+                        <label for="recipient-wish" class="control-label">想看人数<span style="color: red">*</span>:</label>
+                        <input type="text" name="wish" class="form-control width-30" id="recipient-wish" placeholder="请输入想看人数">
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-category" class="control-label">电影分类<span style="color: red">*</span>:</label>
+                        <input type="text" name="category" class="form-control" id="recipient-category" placeholder="请输入类型">
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-content" class="control-label">电影简介:</label>
+                        <textarea class="form-control" style="overflow:hidden; resize:none; " name="content" rows="3" id="recipient-content" placeholder="请输入备注"></textarea>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </form>
+    </div>
+</div>
+
+
+<!-- 修改页面 -->
+<div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" id="exampleModal1">
+    <div class="modal-dialog modal-lg" role="document">
+        <form method="post" id="filmaddform1" action="{:url('film/update')}">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="gridSystemModalLabel1">修改电影信息</h4>
+                </div>
+                <div class="modal-body">
+                    <input type="text" name="id" value="" id="userid" hidden>
+                    <div class="form-group">
+                        <label  class="control-label">电影名称<span style="color: red">*</span>:</label>
+                        <input type="text" name="film_title" class="form-control" id="film_title1" placeholder="请输入电影名称">
+                    </div>
+                    <div class="am-form-group">
+                        <div class="am-u-sm-9" >
+                            <div class="am-form-group am-form-file">
+                                <div class="uploadBtn1" style="height: 45px;">上传封面图片</div>
+                                <small style="padding: 15px;color: #888;">双击图片删除。</small>
+                            </div>
+                            <div id="img_area1">
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label  class="control-label">主演<span style="color: red">*</span>:</label>
+                        <input type="text" name="to_star" id="to_star1" class="form-control"  placeholder="请输入主演">
+                    </div>
+                    <div class="form-group">
+                        <label  class="control-label">评分<span style="color: red">*</span>:</label>
+                        <input type="text" name="score" id="score1" class="form-control width-30" placeholder="请输入评分">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="film_duration1" class="control-label">时长<span style="color: red">*</span>:</label>
+                        <input type="text" name="film_duration" class="form-control width-30" id="film_duration1" placeholder="请输入时长">
+                    </div>
+                    <div class="form-group">
+                        <label  class="control-label">电影类型</label>
+                        <select class="form-control width-30" name="type" id="type1">
+                            <option value="1" selected="selected">2D</option>
+                            <option value="2" >3D</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-max" class="control-label">是否MAX</label>
+                        <select class="form-control width-30" name="max" id="recipient-max1">
+                            <option value="1" selected="selected">MAX</option>
+                            <option value="2" >不是max</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label  class="control-label">播放状态</label>
+                        <select class="form-control width-30" name="release" id="release1">
+                            <option value="1" selected="selected">上映</option>
+                            <option value="2" >未上映</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="heatt">
+                        <label for="recipient-degree_of_heat" class="control-label">热度<span style="color: red">*</span>:</label>
+                        <input type="text" name="degree_of_heat" id="degree_of_heat1" class="form-control width-30"  placeholder="请输入热度">
+                    </div>
+                    <div class="form-group"  id="wishh">
+                        <label for="wish1" class="control-label">想看人数<span style="color: red">*</span>:</label>
+                        <input type="text" name="wish" id="wish1" class="form-control width-30"  placeholder="请输入想看人数">
+                    </div>
+                    <div class="form-group">
+                        <label  class="control-label">电影分类<span style="color: red">*</span>:</label>
+                        <input type="text" name="category" class="form-control" id="category1" placeholder="请输入类型">
+                    </div>
+                    <div class="form-group">
+                        <label  class="control-label">电影简介:</label>
+                        <textarea class="form-control" style="overflow:hidden; resize:none; " id="content1" name="content" rows="3"  placeholder="请输入备注"></textarea>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- PAGE CONTENT ENDS -->
+</div><!-- /.col -->
+</div><!-- /.row -->
+</div><!-- /.page-content -->
+
+
+
+{include file="public/set"}
+
+<!-- echarts -->
+<!--<script src="__ROOT__/static/admin/js/echarts-2.2.7/build/dist/echarts.js"></script>-->
+<!-- 表格所需JS -->
+<script type="text/javascript">
+    //热度 想看人数输入框隐藏显示
+    $(function (){
+
+        $("#recipient-release").change(function (){
+            var vl = $(this).find("option:selected").val();
+            if(vl == 1){
+                $("#heat").css("display","block");
+                $("#wish").css("display","none");
+            }else{
+                $("#wish").css("display","block");
+                $("#heat").css("display","none");
+            }
+        })
+
+        $("#release1").change(function (){
+            var vl = $(this).find("option:selected").val();
+            if(vl == 1){
+                $("#heatt").css("display","block");
+                $("#wishh").css("display","none");
+            }else{
+                $("#wishh").css("display","block");
+                $("#heatt").css("display","none");
+            }
+        })
+    });
+
+
+    $('#addfilm').on('click',function (){
+        $('#exampleModal').modal()
+    });
+
+    function update(url,id){
+
+        $.get(url,{'id':id},function (data){
+            data = JSON.parse(data);
+            for (var o in data){
+                $("#userid").val(data[o].id);
+                $("#film_title1").val(data[o].film_title);
+                $("#to_star1").val(data[o].to_star);
+                $("#score1").val(data[o].score);
+                $("#degree_of_heat1").val(data[o].degree_of_heat);
+                $("#type1").val(data[o].type);
+                $("#recipient-max1").val(data[o].max);
+                $("#release1").val(data[o].release);
+                if(data[o].release == 1){
+                    $("#heatt").css("display","block");
+                    $("#wishh").css("display","none");
+                }else{
+                    $("#heatt").css("display","none");
+                    $("#wishh").css("display","block");
+                }
+                $("#film_duration1").val(data[o].film_duration);
+                $("#category1").val(data[o].category);
+                $("#content1").val(data[o].content);
+                $("#wish1").val(data[o].wish);
+                var html = '';
+                html += '<input name="head_img" type="hidden" value="'+data[o].head_img+'">';
+                html += '<img src="../..'+data[o].head_img+'" style="max-width:150px" ondblclick="del_img(this)">';
+                $("#img_area1").html(html);
+            }
+            $('#exampleModal1').modal();
+        })
+    }
+
+    var index = parent.layer.getFrameIndex(window.name);
+    var uploader ;
+    //添加
+    function add_img() {
+        uploader = WebUploader.create({
+            auto: true,
+            pick: '.uploadBtn',
+            accept: {
+                title: 'Images',
+                extensions: 'gif,jpg,jpeg,bmp,png',
+                mimeTypes: 'image/*',
+            },
+            thumb: {
+                width: 320,
+                height: 422,
+                quality: 100,
+                allowMagnify: false,
+                crop: false,
+                type: 'image/jpeg'
+            },
+        });
+        uploader.onFileQueued = function( file ) {
+            uploader.makeThumb( file, function( error, src ) {
+                if (error) return;
+                var html = '';
+                html += '<input name="head_img" type="hidden" value="'+src+'">';
+                html += '<img src="'+src+'" style="max-width:150px" ondblclick="del_img(this)">';
+                $('#img_area').html(html);
+                parent.layer.iframeAuto(index);
+            });
+        }
+    }
+
+    //修改
+    function update_img() {
+        uploader = WebUploader.create({
+            auto: true,
+            pick: '.uploadBtn1',
+            accept: {
+                title: 'Images',
+                extensions: 'gif,jpg,jpeg,bmp,png',
+                mimeTypes: 'image/*',
+            },
+            thumb: {
+                width: 320,
+                height: 422,
+                quality: 100,
+                allowMagnify: false,
+                crop: false,
+                type: 'image/jpeg'
+            },
+        });
+        uploader.onFileQueued = function( file ) {
+            uploader.makeThumb( file, function( error, src ) {
+                if (error) return;
+                var html = '';
+                html += '<input name="head_img" type="hidden" value="'+src+'">';
+                html += '<img src="'+src+'" style="max-width:150px" ondblclick="del_img(this)">';
+                $('#img_area1').html(html);
+                parent.layer.iframeAuto(index);
+            });
+        }
+    }
+    //解决了在bootstrp下 上传按钮无效
+    $("#exampleModal").on("shown.bs.modal",add_img);
+
+    $('#exampleModal').on('hide.bs.modal', function () {
+        uploader.destroy();
+    });
+
+    $("#exampleModal1").on("shown.bs.modal",update_img);
+
+    $('#exampleModal1').on('hide.bs.modal', function () {
+        uploader.destroy();
+    });
+
+    $(function () {
+        $('#filmaddform').ajaxForm(function (data) {
+            if (data['success']) {
+                layer.alert(data['info'], function (data) {
+                    window.location.reload();
+                    layer.closeAll();
+                    $('#exampleModal').modal('hide');
+                });
+            } else {
+                layer.msg(data['info'], {
+                    icon: 5
+                });
+            }
+        });
+    });
+
+    $(function () {
+        $('#filmaddform1').ajaxForm(function (data) {
+            if (data['success']) {
+                layer.alert(data['info'], function (data) {
+                    window.location.reload();
+                    layer.closeAll();
+                    $('#exampleModal1').modal('hide');
+                });
+            } else {
+                layer.msg(data['info'], {
+                    icon: 5
+                });
+            }
+        });
+    });
+
+    function del_img(obj){
+        layer.confirm('您确定要删除该图片？', function(i){
+            $(obj).prev().remove();
+            $(obj).remove();
+            layer.close(i);
+        });
+
+    }
+    /**
+     * 多选删除
+     */
+    $('#selectall').click(function (){
+        $("input[name='check']").prop('checked',$(this).is(':checked'));
+    });
+    $("input[name='check']").click(function (){
+        var len = $('input[name=check]:checked').length;
+        if (len == $("input[name='check']").length) {
+            $('#selectall').prop('checked', true);
+        } else {
+            $('#selectall').prop('checked', false);
+        }
+    });
+
+    $("#delall").on('click',function () {
+
+        var str = '';
+        $("input[name='check']:checked").each(function(){
+            str += $(this).val() +',';
+        });
+        $.get("{:url('film/del')}",{'id':str.substr(0,str.length-1)},function (data){
+            if (data['success']) {
+                layer.alert(data['info'], function (data) {
+                    window.location.reload();
+                    layer.closeAll();
+                });
+            } else {
+                layer.msg(data['info'], {
+                    icon: 5
+                });
+            }
+        })
+    })
+    //单条删除
+    function del(url,id){
+        $.get(url,{'id':id},function (data){
+            if (data['success']) {
+                layer.alert(data['info'], function (data) {
+                    window.location.reload();
+                    layer.closeAll();
+                });
+            } else {
+                layer.msg(data['info'], {
+                    icon: 5
+                });
+            }
+        })
+    }
+</script>
+{include file="public/footer"}
+

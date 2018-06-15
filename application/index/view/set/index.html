@@ -1,0 +1,86 @@
+{include file="public/header"}
+{include file="public/menu"}
+{include file="public/nav"}
+<div class="row">
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+
+        <form class="form-horizontal" role="form" id="form" action="{:url('set/index')}" method="post">
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="form-field-1">系统名称</label>
+
+                <div class="col-sm-9">
+                    <input class="col-xs-10 col-sm-5" id="form-field-1" name="adminuser" onkeyup="this.value=this.value.replace(/\s+/g,'')" type="text" placeholder="系统名称" value="{$set.adminuser}">
+                </div>
+            </div>
+
+            <div class="space-4"></div>
+
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="form-field-2"> 公司(店铺)名称 </label>
+
+                <div class="col-sm-9">
+                    <input class="col-xs-10 col-sm-5" id="form-field-2" name="comepanyuser" onkeyup="this.value=this.value.replace(/\s+/g,'')" type="text" placeholder="店铺名称" value="{$set.comepanyuser}">
+                </div>
+            </div>
+
+
+            <div class="space-4"></div>
+
+            <div class="clearfix form-actions">
+                <div class="col-md-offset-3 col-md-9">
+                    <button class="btn btn-info" type="submit">
+                        <i class="icon-ok bigger-110"></i>
+                        保存
+                    </button>
+
+                    &nbsp; &nbsp; &nbsp;
+                    <button class="btn" type="reset" onclick="inputreset()">
+                        <i class="icon-undo bigger-110"></i>
+                        重置
+                    </button>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+
+
+
+
+    <!-- 结束-->
+</div><!-- /row -->
+<div class="hr hr32 hr-dotted"></div>
+
+<!-- PAGE CONTENT ENDS -->
+</div><!-- /.col -->
+</div><!-- /.row -->
+
+</div><!-- /.page-content -->
+
+
+{include file="public/set"}
+
+
+<script type="text/javascript">
+    function inputreset(){
+
+        $("#form-field-2").attr("value",'');
+        $("#form-field-1").attr("value",'');
+    }
+    $('#form').ajaxForm(function (data) {
+        if (data['success']) {
+            layer.alert(data['info'], function (data) {
+                window.location.reload();
+                layer.closeAll();
+            });
+        } else {
+            layer.msg(data['info'], {
+                icon: 5
+            });
+        }
+    });
+</script>
+{include file="public/footer"}
+

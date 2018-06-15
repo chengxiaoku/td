@@ -1,0 +1,223 @@
+{include file="public/header"}
+{include file="public/menu"}
+{include file="public/nav"}
+<div class="row">
+    <div class="col-xs-12">
+
+
+        <div class="box">
+            <div class="box-header">
+                <a class="btn btn-primary" href="#" id="projectadd">添加管理员</a>
+
+            </div><!-- /.box-header -->
+        </div>
+    </div>
+    <!-- 表格区域-->
+    <div class="col-xs-12" style="margin-top: 15px">
+        <div class="bs-example table-bordered table" data-example-id="hoverable-table">
+            <table class="table table-hover" id="example-r">
+                <thead>
+                <tr>
+                    <th>编号</th>
+                    <th>昵称</th>
+                    <th>账号名</th>
+                    <th >最后登陆的IP</th>
+                    <th>创建时间</th>
+                    <th>类型</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {volist name="list" id='vo'}
+                <tr>
+                    <td>{$vo.id}</td>
+                    <td>
+                        {$vo.nickname}
+                    </td>
+                    <td><strong>{$vo.username}</strong></td>
+
+                    <td>{$vo.lastip}</td>
+                    <td>{$vo.createtime|date="Y-m-d H:i:s",###}</td>
+                    <td>
+                        {if condition="$vo.isadmin eq 1"}
+                            超级管理员
+                        {else/}
+                            普通管理员
+                        {/if}
+                    </td>
+                    <td>
+                        {if condition="$vo.isadmin eq 1"}
+                            禁止修改
+                        {else/}
+                        <button type="button" class="btn btn-default btn-xs" onclick="update('{:url("admin/update")}',{$vo['id']})" >编辑</button>
+                        <button type="button" class="btn btn-danger btn-xs" onclick="del('{:url("admin/del")}',{$vo['id']})">删除</button>
+                        {/if}
+                    </td>
+                </tr>
+                {/volist}
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+
+
+    <!-- 结束-->
+</div><!-- /row -->
+<div class="hr hr32 hr-dotted"></div>
+
+<!-- PAGE CONTENT ENDS -->
+</div><!-- /.col -->
+</div><!-- /.row -->
+
+</div><!-- /.page-content -->
+
+<!-- 添加模态框 -->
+
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">添加管理员</h4>
+            </div>
+            <form method="post" id="useraddform" action="{:url('admin/add')}">
+                <div class="modal-body" >
+
+                    <div class="form-group">
+                        <label for="recipient-name" class="control-label">管理员账号名<span style="color: red">*</span>:</label>
+                        <input type="text" name="username" class="form-control width-30" id="recipient-name" placeholder="请输入管理员账号名">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recipient-money" class="control-label">管理员昵称<span style="color: red">*</span>:</label>
+                        <input type="tel" name="nickname" class="form-control width-30" id="recipient-money" placeholder="管理员昵称">
+                    </div>
+
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary" >保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 更新模态框 -->
+
+<div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="exampleModalLabel2">编辑管理员信息</h4>
+            </div>
+            <form method="post" id="useraddform2" action="{:url('admin/update')}">
+                <div class="modal-body" >
+                    <input type="text" name="id" value="" id="userid" hidden>
+                    <div class="form-group">
+                        <label for="recipient-name1" class="control-label">管理员账号名<span style="color: red">*</span>:</label>
+                        <input type="text" name="username" class="form-control width-30" id="recipient-username1" placeholder="请输入管理员账号名">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recipient-money" class="control-label">管理员昵称<span style="color: red">*</span>:</label>
+                        <input type="tel" name="nickname" class="form-control width-30" id="recipient-nickname1" placeholder="管理员昵称">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary" >保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{include file="public/set"}
+
+
+<script type="text/javascript">
+
+    function update(url,id){
+
+        $.get(url,{'id':id},function (data){
+            data = JSON.parse(data);
+            for (var o in data){
+                $("#userid").val(data[o].id);
+                $("#recipient-username1").val(data[o].username);
+                $("#recipient-nickname1").val(data[o].nickname);
+                /*var qxobj = data[o].qx;
+                if(qxobj){
+                    for(var j in qxobj){
+                        $("input[na="+j+"]").attr("checked",true);
+                    }
+                }else{
+
+                }*/
+            }
+            $('#exampleModal2').modal();
+        })
+    }
+    function del(url,id){
+        $.get(url,{'id':id},function (data){
+            if (data['success']) {
+                layer.alert(data['info'], function (data) {
+                    window.location.reload();
+                });
+            } else {
+                layer.msg(data['info'], {
+                    icon: 5
+                });
+            }
+        })
+    }
+
+    $('#projectadd').on('click',function (){
+        $('#exampleModal').modal()
+    });
+    $(function () {
+        $('#useraddform').ajaxForm(function (data) {
+            if (data['success']) {
+                layer.alert(data['info'], function (data) {
+                    window.location.reload()
+                    layer.closeAll();
+                    $('#exampleModal').modal('hide');
+                });
+            } else {
+                layer.msg(data['info'], {
+                    icon: 5
+                });
+            }
+        });
+
+        $('#useraddform2').ajaxForm(function (data) {
+            if (data['success']) {
+                layer.alert(data['info'], function (data) {
+                    window.location.reload()
+                    layer.closeAll();
+                    $('#exampleModal').modal('hide');
+                });
+            } else {
+                layer.msg(data['info'], {
+                    icon: 5
+                });
+            }
+        });
+    });
+
+    //模态框被关闭时  表单信息重置
+    $('#exampleModal2').on('hidden.bs.modal', function (e) {
+        // do something...
+
+    });
+</script>
+{include file="public/footer"}
+
